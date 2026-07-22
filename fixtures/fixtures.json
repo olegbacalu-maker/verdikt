@@ -1,0 +1,137 @@
+{
+    "description": "Synthetic German customer replies about delivery appointments. Typical phrasings seen at a dispatch desk, written from scratch for this repo — no real names, addresses, order numbers or customer text. 'expected' is the human ground-truth verdict; known divergences of the rules engine are documented in tests/FixturesTest.php.",
+    "fixtures": [
+        {
+            "id": "ja_einfach",
+            "text": "Ja, der Termin passt uns gut. Vielen Dank!",
+            "expected": "TERMIN_OK",
+            "note": "plain agreement"
+        },
+        {
+            "id": "bestaetigt",
+            "text": "Hiermit bestätige ich den Liefertermin am Mittwoch.",
+            "expected": "TERMIN_OK",
+            "note": "explicit confirmation"
+        },
+        {
+            "id": "nein_neuer_termin",
+            "text": "Der Termin passt mir leider nicht, bitte um einen neuen Termin.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "refusal + reschedule request"
+        },
+        {
+            "id": "anderer_termin_mit_fragezeichen",
+            "text": "Können wir einen anderen Termin vereinbaren?",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "phrased as a question, but the intent is a reschedule — cascade order (nein_stark before frage) gets this right"
+        },
+        {
+            "id": "abwesend_autoreply",
+            "text": "Automatische Antwort: Ich bin derzeit nicht im Büro und ab dem 15.08. wieder erreichbar.",
+            "expected": "ABWESEND",
+            "note": "auto-reply must win over the 'nicht' inside it"
+        },
+        {
+            "id": "out_of_office",
+            "text": "Out of office: I will be back on Monday, please contact my colleague.",
+            "expected": "ABWESEND",
+            "note": "English auto-reply"
+        },
+        {
+            "id": "frage_kosten",
+            "text": "Was kostet die Lieferung ins Dachgeschoss?",
+            "expected": "FRAGE",
+            "note": "price question"
+        },
+        {
+            "id": "frage_uhrzeit",
+            "text": "Wann genau kommen Sie am Dienstag?",
+            "expected": "FRAGE",
+            "note": "looks like liefern_ok ('kommen Sie am'), but the question guard reroutes it to FRAGE"
+        },
+        {
+            "id": "abstellgenehmigung",
+            "text": "Sie können das Paket gerne in der Garage abstellen.",
+            "expected": "TERMIN_OK",
+            "note": "permission to leave the parcel = implicit yes"
+        },
+        {
+            "id": "keine_abstellgenehmigung",
+            "text": "Bitte nicht vor der Tür abstellen, wir sind im Urlaub.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "negated leave-permission + vacation"
+        },
+        {
+            "id": "lieferfenster_ok",
+            "text": "Sie können am Dienstag zwischen 8 und 12 Uhr liefern.",
+            "expected": "TERMIN_OK",
+            "note": "customer grants a delivery window"
+        },
+        {
+            "id": "selbst_geregelt",
+            "text": "Ich habe es jetzt doch geregelt.",
+            "expected": "TERMIN_OK",
+            "note": "customer arranged it themselves"
+        },
+        {
+            "id": "nicht_zu_hause",
+            "text": "Wir sind nächste Woche nicht zu Hause.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "weak no: absence without explicit refusal"
+        },
+        {
+            "id": "bin_zu_hause",
+            "text": "Ich bin morgen den ganzen Tag zu Hause.",
+            "expected": "TERMIN_OK",
+            "note": "presence = agreement"
+        },
+        {
+            "id": "nicht_bestaetigt",
+            "text": "Den Termin kann ich so nicht bestätigen.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "negated confirmation — the bestaetigt guard must catch this"
+        },
+        {
+            "id": "storno",
+            "text": "Bitte stornieren Sie die Lieferung, wir haben kein Interesse mehr.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "cancellation — the 5-class taxonomy deliberately folds order cancellations into TERMIN_PASST_NICHT (anything where delivery will not happen as scheduled); a dispatcher still reviews these before proposing a new date"
+        },
+        {
+            "id": "gegenvorschlag",
+            "text": "Dienstag passt leider nicht, aber Donnerstag würde bei uns gehen.",
+            "expected": "TERMIN_PASST_NICHT",
+            "note": "refusal with concrete counter-proposal — the most common reschedule phrasing"
+        },
+        {
+            "id": "rueckruf_bitte",
+            "text": "Bitte rufen Sie mich an, damit wir einen Termin abstimmen können.",
+            "expected": "PRUEFEN",
+            "note": "callback request — nothing actionable without a phone call"
+        },
+        {
+            "id": "nichts_bestellt",
+            "text": "Ich habe nichts bestellt, das muss eine Verwechslung sein.",
+            "expected": "PRUEFEN",
+            "note": "wrong recipient / no order — must go to a human"
+        },
+        {
+            "id": "unklar",
+            "text": "Bitte um Rückmeldung zu meinem Anliegen.",
+            "expected": "PRUEFEN",
+            "note": "nothing actionable — needs a human"
+        },
+        {
+            "id": "garage_mit_komma",
+            "text": "Falls wir nicht da sind, stellen Sie es bitte in die Garage.",
+            "expected": "TERMIN_OK",
+            "note": "the classic hidden yes: absence mentioned inside an agreement"
+        },
+        {
+            "id": "garage_ohne_komma",
+            "text": "Falls wir nicht da sind stellen Sie es bitte in die Garage",
+            "expected": "TERMIN_OK",
+            "note": "same reply, missing comma (customers do that) — known rules-engine divergence, see FixturesTest"
+        }
+    ]
+}

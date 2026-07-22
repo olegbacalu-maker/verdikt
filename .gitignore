@@ -2,4 +2,5 @@
 /.env
 /var/*.sqlite
 /var/*.sqlite-journal
+/var/*.log
 .phpunit.cache/

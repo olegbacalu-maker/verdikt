@@ -22,6 +22,6 @@ final class HealthTest extends TestCase
 
         $body = json_decode((string) $response->getBody(), true);
         $this->assertSame('ok', $body['status']);
-        $this->assertSame(['rules', 'llm'], $body['engines']);
+        $this->assertSame(['rules'], $body['engines'], 'health must list CONFIGURED engines only');
     }
 }
