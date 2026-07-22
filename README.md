@@ -106,7 +106,9 @@ The cascade is a 1:1 port, and that claim is **tested, not asserted**:
 ## Stack
 
 PHP 8.3 · Slim 4 · Guzzle · vlucas/phpdotenv · PHPUnit · SQLite (request journal) ·
-vanilla JS front-end.
+vanilla JS front-end (no build step, no framework, no third-party requests —
+fonts are self-hosted: remote Google Fonts embedding is a GDPR violation per
+LG München I, 3 O 17493/20).
 
 ## Run locally
 
@@ -124,6 +126,6 @@ The rules engine and `/api/health` work without any API key.
 - [x] Day 1 — skeleton: Slim 4, `/api/health`, PHPUnit wired
 - [x] Day 2 — rules engine port (differentially tested vs the original) + 22 synthetic fixtures + tests
 - [x] Day 3 — Anthropic client (Guzzle, forced tool call + strict schema, retries), `engine=llm|both` live
-- [ ] Day 4 — web UI
+- [x] Day 4 — web UI: dark-terminal demo page (vanilla JS, self-hosted fonts — no third-party requests, GDPR-clean)
 - [ ] Day 5 — `/eval` + SQLite journal
 - [ ] Day 6 — deploy

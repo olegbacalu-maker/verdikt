@@ -93,6 +93,7 @@ final class VerdictAction
         $payload = ['cleaned_text' => $cleaned, 'results' => $results];
         if ($note !== null) {
             $payload['note'] = $note;
+            $payload['note_code'] = 'quoted_history_only'; // stable id for client-side i18n
         }
 
         return self::json($response, 200, $payload);

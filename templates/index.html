@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verdikt — Klassifikator für Kundenantworten</title>
+<meta name="description" content="Klassifiziert deutsche Kundenantworten zu Lieferterminen: deterministische Regeln vs. LLM (Anthropic API), im direkten Vergleich.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230d0d0b'/%3E%3Crect x='5' y='3' width='6' height='10' fill='%231D9E75'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand">
+      <span class="brand-name">VERDIKT</span><span class="cursor" aria-hidden="true">▮</span>
+    </div>
+    <p class="tagline">Klassifikator für Kundenantworten zu Lieferterminen – <span class="hl-green">Regeln</span> vs. <span class="hl-purple">LLM</span></p>
+    <p class="health" id="health" aria-live="polite"><span class="dot dot-wait"></span>API wird geprüft…</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel" aria-labelledby="input-heading">
+    <h2 id="input-heading" class="panel-title">// Kundenantwort</h2>
+
+    <label class="sr-only" for="text">Kundenantwort eingeben</label>
+    <textarea id="text" rows="5" spellcheck="false"
+      placeholder="z. B.  Der Termin passt mir leider nicht, bitte um einen neuen Termin."></textarea>
+
+    <div class="examples" id="examples" role="group" aria-label="Beispiele">
+      <span class="examples-label">Beispiele:</span>
+    </div>
+
+    <div class="controls">
+      <fieldset class="engines" id="engines">
+        <legend class="sr-only">Engine wählen</legend>
+        <label><input type="radio" name="engine" value="rules" checked> Regeln</label>
+        <label><input type="radio" name="engine" value="llm" disabled> LLM</label>
+        <label><input type="radio" name="engine" value="both" disabled> Beide</label>
+      </fieldset>
+      <button id="go" type="button">Klassifizieren</button>
+    </div>
+  </section>
+
+  <section id="output" class="output" aria-live="polite"></section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>rules-engine: Port eines produktiv eingesetzten PowerShell-Werkzeugs · llm: Claude Haiku via Anthropic API</span>
+    <nav>
+      <a href="/api/health">/api/health</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+</body>
+</html>

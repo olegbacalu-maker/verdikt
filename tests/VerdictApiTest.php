@@ -131,6 +131,7 @@ final class VerdictApiTest extends TestCase
         $this->assertSame('', $body['cleaned_text']);
         $this->assertSame('PRUEFEN', $body['results'][0]['verdict']);
         $this->assertArrayHasKey('note', $body);
+        $this->assertSame('quoted_history_only', $body['note_code']);
     }
 
     public function testUpstreamLlmFailureMapsTo502(): void

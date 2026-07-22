@@ -12,6 +12,7 @@ use Verdikt\Anthropic\AnthropicClient;
 use Verdikt\Engine\EngineInterface;
 use Verdikt\Engine\LlmEngine;
 use Verdikt\Engine\RulesEngine;
+use Verdikt\Http\HomeAction;
 use Verdikt\Http\VerdictAction;
 use Verdikt\Text\ReplyCleaner;
 
@@ -75,6 +76,8 @@ final class App
      */
     private static function routes(SlimApp $app, array $engines): void
     {
+        $app->get('/', new HomeAction());
+
         $app->get('/api/health', function (Request $request, Response $response) use ($engines): Response {
             $payload = [
                 'status'  => 'ok',
