@@ -39,6 +39,14 @@ precisely the case the rules miss — and now that trade-off is **measured**,
 not assumed. Run it yourself: `composer eval` (22 LLM calls ≈ $0.04), then
 open `/eval` for the full table.
 
+**Epilogue:** the finding didn't stay in the demo. The guard fix
+(`(stell|leg)en` → `(stell|leg)en(?!\s+sie\b)` — an imperative addressed to
+the courier is a permission, not a negated placement) was ported back into
+the production PowerShell tool, verified against a 62-text differential
+corpus: exactly 3 verdicts changed, all of them the target class. This repo
+keeps the pre-fix cascade on purpose — it documents what the measurement
+found.
+
 ## Architecture
 
 ```
