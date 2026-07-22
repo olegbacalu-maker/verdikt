@@ -1,0 +1,9 @@
+# Apache routing for shared hosting: real files are served directly,
+# everything else goes through the Slim front controller.
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# never serve dotfiles (.env lives one level above the docroot anyway)
+RewriteRule (^|/)\. - [F]
