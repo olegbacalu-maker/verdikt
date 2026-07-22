@@ -1,5 +1,7 @@
 # Verdikt
 
+[![CI](https://github.com/olegbacalu-maker/verdikt/actions/workflows/ci.yml/badge.svg)](https://github.com/olegbacalu-maker/verdikt/actions/workflows/ci.yml)
+
 Classifies German customer replies about delivery appointments — the daily reality of a
 dispatch desk: hundreds of emails saying "the date works", "the date does not work",
 "I'm on vacation", or asking a question. Verdikt reads a reply and returns a verdict:
