@@ -34,7 +34,7 @@ $pct = static fn (int $n): string => $total > 0 ? sprintf('%d %%', (int) round($
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230d0d0b'/%3E%3Crect x='5' y='3' width='6' height='10' fill='%231D9E75'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
-<body>
+<body class="wide">
 
 <header class="site-header">
   <div class="wrap">

@@ -19,6 +19,12 @@ The `/eval` page runs both engines over a fixture set of synthetic German replie
 shows where they agree and where they diverge — measuring LLM quality instead of
 assuming it.
 
+![Demo: the hidden-yes case where the engines disagree](docs/screenshots/demo.png)
+
+*The showcase case, shareable as `/?beispiel=4&engine=both&auto=1`: a missing
+comma makes the regex cascade read absence as refusal, while the LLM correctly
+sees permission to leave the parcel in the garage.*
+
 > **Origin.** The rules cascade is a PHP port of a tool I built and use daily to sort
 > real customer replies for a DHL service partner's dispatch desk. All fixtures here
 > are **synthetic** (typical phrasings, no names / addresses / tracking numbers).
@@ -46,6 +52,8 @@ the production PowerShell tool, verified against a 62-text differential
 corpus: exactly 3 verdicts changed, all of them the target class. This repo
 keeps the pre-fix cascade on purpose — it documents what the measurement
 found.
+
+![Eval: both engines over the whole corpus, against human ground truth](docs/screenshots/eval.png)
 
 ## Architecture
 
@@ -172,4 +180,4 @@ The rules engine and `/api/health` work without any API key.
 - [x] Day 3 — Anthropic client (Guzzle, forced tool call + strict schema, retries), `engine=llm|both` live
 - [x] Day 4 — web UI: dark-terminal demo page (vanilla JS, self-hosted fonts — no third-party requests, GDPR-clean)
 - [x] Day 5 — `/eval` (rules vs LLM over the corpus, measured) + SQLite journal + CLI eval runner
-- [ ] Day 6 — deploy
+- [x] Day 6 — public repo, CI, screenshots; deploy-ready ([docs/DEPLOY.md](docs/DEPLOY.md)) — live hosting deliberately deferred

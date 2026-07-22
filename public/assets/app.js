@@ -190,6 +190,25 @@ async function classify() {
   }
 }
 
+/* ---- shareable links: /?beispiel=4&engine=both&auto=1 ---- */
+
+function initFromUrl() {
+  const params = new URLSearchParams(location.search);
+
+  const beispiel = parseInt(params.get('beispiel') ?? '', 10);
+  if (beispiel >= 1 && beispiel <= EXAMPLES.length) {
+    $('#text').value = EXAMPLES[beispiel - 1].text;
+  }
+
+  const engine = params.get('engine');
+  if (['rules', 'llm', 'both'].includes(engine)) {
+    const input = document.querySelector('#engines input[value="' + engine + '"]');
+    if (input && !input.disabled) input.checked = true;
+  }
+
+  if (params.get('auto') === '1' && $('#text').value.trim() !== '') classify();
+}
+
 /* ---- boot ---- */
 
 $('#go').addEventListener('click', classify);
@@ -198,4 +217,4 @@ $('#text').addEventListener('keydown', (event) => {
 });
 
 initExamples();
-initHealth();
+initHealth().then(initFromUrl); // llm/both radios unlock only after health
