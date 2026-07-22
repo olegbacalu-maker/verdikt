@@ -63,6 +63,25 @@ otherwise a "bestätigt" inside the *quoted* mail would flip the verdict. If
 cleaning leaves nothing (the paste was pure quoted history), the verdict
 fails safe to `PRUEFEN` — same direction as the original.
 
+### The LLM engine
+
+`AnthropicClient` is a deliberately hand-rolled Guzzle client (the official
+PHP SDK exists — but auth headers, retry policy and error taxonomy are exactly
+the parts this showcase should not hide):
+
+- **Structured output** via a forced tool call: `tool_choice` pins the model to
+  the `verdict` tool, `strict: true` guarantees schema-valid input — the
+  verdict arrives as a clean enum plus a one-sentence German justification,
+  no free-text parsing.
+- **Retries**: 429/5xx/529 and transport errors get exponential backoff
+  honoring `Retry-After` (capped, so a web request stays bounded); other 4xx
+  fail fast. Upstream failure maps to an honest `502`, never a half-empty
+  comparison.
+- **Cost**: Claude Haiku 4.5 at $1/$5 per MTok ≈ **$0.0016 per classification**
+  (~1.2k input + ~90 output tokens). Token usage is reported in `meta`.
+- All engine tests run against a Guzzle `MockHandler` — no network, no key,
+  no cost in CI.
+
 ### How the rules engine is verified
 
 The cascade is a 1:1 port, and that claim is **tested, not asserted**:
@@ -104,7 +123,7 @@ The rules engine and `/api/health` work without any API key.
 
 - [x] Day 1 — skeleton: Slim 4, `/api/health`, PHPUnit wired
 - [x] Day 2 — rules engine port (differentially tested vs the original) + 22 synthetic fixtures + tests
-- [ ] Day 3 — Anthropic client (structured output, retries), `engine=llm|both`
+- [x] Day 3 — Anthropic client (Guzzle, forced tool call + strict schema, retries), `engine=llm|both` live
 - [ ] Day 4 — web UI
 - [ ] Day 5 — `/eval` + SQLite journal
 - [ ] Day 6 — deploy

@@ -8,7 +8,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App as SlimApp;
 use Slim\Factory\AppFactory;
+use Verdikt\Anthropic\AnthropicClient;
 use Verdikt\Engine\EngineInterface;
+use Verdikt\Engine\LlmEngine;
 use Verdikt\Engine\RulesEngine;
 use Verdikt\Http\VerdictAction;
 use Verdikt\Text\ReplyCleaner;
@@ -51,10 +53,20 @@ final class App
     /** @return array<string, EngineInterface> engines that are actually usable right now */
     private static function engines(): array
     {
-        return [
-            RulesEngine::NAME => new RulesEngine(),
-            // 'llm' arrives on day 3 (requires ANTHROPIC_API_KEY)
-        ];
+        $engines = [RulesEngine::NAME => new RulesEngine()];
+
+        // llm is available exactly when a key is configured — health and the
+        // 501 path stay truthful automatically
+        $apiKey = (string) ($_ENV['ANTHROPIC_API_KEY'] ?? '');
+        if ($apiKey !== '') {
+            $model = (string) ($_ENV['ANTHROPIC_MODEL'] ?? '');
+            $engines[LlmEngine::NAME] = new LlmEngine(
+                new AnthropicClient(new \GuzzleHttp\Client(), $apiKey),
+                $model !== '' ? $model : LlmEngine::DEFAULT_MODEL,
+            );
+        }
+
+        return $engines;
     }
 
     /**
@@ -74,7 +86,7 @@ final class App
 
             $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
-            return $response->withHeader('Content-Type', 'application/json');
+            return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
         });
 
         $app->post('/api/verdict', new VerdictAction($engines, self::KNOWN_ENGINES, new ReplyCleaner()));

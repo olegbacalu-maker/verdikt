@@ -133,6 +133,37 @@ final class VerdictApiTest extends TestCase
         $this->assertArrayHasKey('note', $body);
     }
 
+    public function testUpstreamLlmFailureMapsTo502(): void
+    {
+        $failing = new class implements \Verdikt\Engine\EngineInterface {
+            public function name(): string
+            {
+                return 'llm';
+            }
+
+            public function classify(string $text): \Verdikt\Engine\VerdictResult
+            {
+                throw new \Verdikt\Anthropic\AnthropicApiException('API error (HTTP 529): Overloaded', 529);
+            }
+        };
+
+        $action = new \Verdikt\Http\VerdictAction(
+            ['rules' => new \Verdikt\Engine\RulesEngine(), 'llm' => $failing],
+            ['rules', 'llm'],
+            new \Verdikt\Text\ReplyCleaner(),
+        );
+
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/verdict')
+            ->withParsedBody(['text' => 'Passt.', 'engine' => 'llm']);
+
+        $response = $action($request, new \Slim\Psr7\Response());
+        $body = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame(502, $response->getStatusCode());
+        $this->assertStringContainsString('Overloaded', $body['error']);
+    }
+
     public function testApiErrorsAreJsonEvenForRouting(): void
     {
         // 405 (wrong method) is produced by Slim's error middleware, not our

@@ -6,6 +6,7 @@ namespace Verdikt\Http;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Verdikt\Anthropic\AnthropicApiException;
 use Verdikt\Engine\EngineInterface;
 use Verdikt\Text\ReplyCleaner;
 
@@ -81,7 +82,12 @@ final class VerdictAction
 
         $results = [];
         foreach ($wanted as $name) {
-            $results[] = $this->engines[$name]->classify($cleaned);
+            try {
+                $results[] = $this->engines[$name]->classify($cleaned);
+            } catch (AnthropicApiException $e) {
+                // upstream failed — an honest 502 beats a half-empty comparison
+                return self::error($response, 502, sprintf("engine '%s' failed: %s", $name, $e->getMessage()));
+            }
         }
 
         $payload = ['cleaned_text' => $cleaned, 'results' => $results];
@@ -102,6 +108,6 @@ final class VerdictAction
     {
         $response->getBody()->write(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
-        return $response->withStatus($status)->withHeader('Content-Type', 'application/json');
+        return $response->withStatus($status)->withHeader('Content-Type', 'application/json; charset=utf-8');
     }
 }
