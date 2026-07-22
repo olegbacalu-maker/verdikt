@@ -19,5 +19,7 @@
         <!-- expected 4xx from negative tests are logged by Slim's error
              middleware; keep them out of the test output -->
         <ini name="error_log" value="var/test-error.log"/>
+        <!-- tests must not touch the real journal -->
+        <env name="DB_PATH" value=":memory:"/>
     </php>
 </phpunit>

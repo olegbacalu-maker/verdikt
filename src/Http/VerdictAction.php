@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Verdikt\Anthropic\AnthropicApiException;
 use Verdikt\Engine\EngineInterface;
+use Verdikt\Storage\Journal;
 use Verdikt\Text\ReplyCleaner;
 
 /**
@@ -30,6 +31,7 @@ final class VerdictAction
         private readonly array $engines,
         private readonly array $knownEngines,
         private readonly ReplyCleaner $cleaner,
+        private readonly ?Journal $journal = null,
     ) {
     }
 
@@ -88,6 +90,17 @@ final class VerdictAction
                 // upstream failed — an honest 502 beats a half-empty comparison
                 return self::error($response, 502, sprintf("engine '%s' failed: %s", $name, $e->getMessage()));
             }
+        }
+
+        try {
+            $this->journal?->logVerdict(
+                $engineParam,
+                $cleaned,
+                $results,
+                array_sum(array_map(static fn ($r): float => $r->durationMs, $results)),
+            );
+        } catch (\PDOException) {
+            // journaling must never break a classification response
         }
 
         $payload = ['cleaned_text' => $cleaned, 'results' => $results];

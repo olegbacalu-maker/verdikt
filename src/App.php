@@ -12,8 +12,10 @@ use Verdikt\Anthropic\AnthropicClient;
 use Verdikt\Engine\EngineInterface;
 use Verdikt\Engine\LlmEngine;
 use Verdikt\Engine\RulesEngine;
+use Verdikt\Http\EvalAction;
 use Verdikt\Http\HomeAction;
 use Verdikt\Http\VerdictAction;
+use Verdikt\Storage\Journal;
 use Verdikt\Text\ReplyCleaner;
 
 /**
@@ -46,13 +48,26 @@ final class App
             $errorHandler->forceContentType('application/json');
         }
 
-        self::routes($app, self::engines());
+        try {
+            $journal = new Journal(self::dbPath());
+        } catch (\PDOException) {
+            $journal = null; // journal is a nice-to-have — classification must not die with it
+        }
+
+        self::routes($app, self::engines(), $journal);
 
         return $app;
     }
 
+    public static function dbPath(): string
+    {
+        $path = (string) ($_ENV['DB_PATH'] ?? '');
+
+        return $path !== '' ? $path : dirname(__DIR__) . '/var/verdikt.sqlite';
+    }
+
     /** @return array<string, EngineInterface> engines that are actually usable right now */
-    private static function engines(): array
+    public static function engines(): array
     {
         $engines = [RulesEngine::NAME => new RulesEngine()];
 
@@ -74,9 +89,10 @@ final class App
      * @param SlimApp<\Psr\Container\ContainerInterface|null> $app
      * @param array<string, EngineInterface>                  $engines
      */
-    private static function routes(SlimApp $app, array $engines): void
+    private static function routes(SlimApp $app, array $engines, ?Journal $journal): void
     {
         $app->get('/', new HomeAction());
+        $app->get('/eval', new EvalAction($journal));
 
         $app->get('/api/health', function (Request $request, Response $response) use ($engines): Response {
             $payload = [
@@ -92,6 +108,6 @@ final class App
             return $response->withHeader('Content-Type', 'application/json; charset=utf-8');
         });
 
-        $app->post('/api/verdict', new VerdictAction($engines, self::KNOWN_ENGINES, new ReplyCleaner()));
+        $app->post('/api/verdict', new VerdictAction($engines, self::KNOWN_ENGINES, new ReplyCleaner(), $journal));
     }
 }

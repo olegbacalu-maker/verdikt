@@ -21,12 +21,46 @@ assuming it.
 > real customer replies for a DHL service partner's dispatch desk. All fixtures here
 > are **synthetic** (typical phrasings, no names / addresses / tracking numbers).
 
+## Results (eval run on all 22 fixtures)
+
+| | Rules | LLM (Haiku) |
+|---|---|---|
+| Correct vs human ground truth | **21/22** (95 %) | **22/22** (100 %) |
+| Median latency | ~0.3 ms | ~2 s |
+| Cost per reply | free | ~$0.0016 |
+
+The engines disagree on exactly **one** fixture — `garage_ohne_komma`, the
+documented legacy quirk where a missing comma flips the negation guard. The
+LLM reads the hidden yes correctly. That single row is the whole point of the
+project: the regex cascade is fast, free and 95 % right; the LLM catches
+precisely the case the rules miss — and now that trade-off is **measured**,
+not assumed. Run it yourself: `composer eval` (22 LLM calls ≈ $0.04), then
+open `/eval` for the full table.
+
+## Architecture
+
+```
+public/index.php          front controller (Slim 4) + static assets
+src/
+├── App.php               app factory: routes, middleware, engine wiring
+├── Verdict.php           the 5-verdict enum
+├── Fixtures.php          synthetic corpus loader (shared by tests + eval)
+├── Engine/               EngineInterface · RulesEngine (regex-cascade port) · LlmEngine (Claude)
+├── Anthropic/            hand-rolled Guzzle client, retries, error taxonomy
+├── Text/ReplyCleaner     quoted-history extractor (port)
+├── Http/                 HomeAction · VerdictAction · EvalAction
+├── Storage/Journal.php   SQLite: request journal + eval runs
+└── Eval/EvalRunner.php   both engines over the corpus, aggregated
+bin/eval.php              CLI eval runner (composer eval)
+templates/                demo page + server-rendered eval table
+```
+
 ## API
 
 ```
 GET  /api/health                              → {"status":"ok", ...}
-POST /api/verdict {text, engine: rules|llm|both} → verdict + explanation
-GET  /eval                                    → rules vs LLM on all fixtures
+POST /api/verdict {text, engine: rules|llm|both} → verdict + explanation (journaled to SQLite)
+GET  /eval                                    → latest eval run: rules vs LLM on all fixtures
 ```
 
 Example:
@@ -127,5 +161,5 @@ The rules engine and `/api/health` work without any API key.
 - [x] Day 2 — rules engine port (differentially tested vs the original) + 22 synthetic fixtures + tests
 - [x] Day 3 — Anthropic client (Guzzle, forced tool call + strict schema, retries), `engine=llm|both` live
 - [x] Day 4 — web UI: dark-terminal demo page (vanilla JS, self-hosted fonts — no third-party requests, GDPR-clean)
-- [ ] Day 5 — `/eval` + SQLite journal
+- [x] Day 5 — `/eval` (rules vs LLM over the corpus, measured) + SQLite journal + CLI eval runner
 - [ ] Day 6 — deploy

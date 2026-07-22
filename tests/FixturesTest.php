@@ -78,11 +78,6 @@ final class FixturesTest extends TestCase
     /** @return list<array{id: string, text: string, expected: string, note: string}> */
     private static function fixtures(): array
     {
-        $raw = file_get_contents(__DIR__ . '/../fixtures/fixtures.json');
-        self::assertNotFalse($raw);
-
-        $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-
-        return $data['fixtures'];
+        return \Verdikt\Fixtures::load();
     }
 }

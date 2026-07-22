@@ -30,6 +30,7 @@
     "scripts": {
         "test": "phpunit",
         "stan": "phpstan analyse",
+        "eval": "php bin/eval.php",
         "serve": "php -S localhost:8080 -t public"
     },
     "config": {

@@ -134,6 +134,26 @@ final class VerdictApiTest extends TestCase
         $this->assertSame('quoted_history_only', $body['note_code']);
     }
 
+    public function testSuccessfulRequestIsJournaled(): void
+    {
+        $journal = new \Verdikt\Storage\Journal(':memory:');
+        $action = new \Verdikt\Http\VerdictAction(
+            ['rules' => new \Verdikt\Engine\RulesEngine()],
+            ['rules', 'llm'],
+            new \Verdikt\Text\ReplyCleaner(),
+            $journal,
+        );
+
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/api/verdict')
+            ->withParsedBody(['text' => 'Ja, passt.', 'engine' => 'rules']);
+
+        $response = $action($request, new \Slim\Psr7\Response());
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(1, $journal->requestCount());
+    }
+
     public function testUpstreamLlmFailureMapsTo502(): void
     {
         $failing = new class implements \Verdikt\Engine\EngineInterface {
